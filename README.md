@@ -11,3 +11,9 @@ The actual staging could proceed as follows:
 Analysis details: 
 The plotted time series have been downsampled 10 times, this shouldn't matter as they have also been filtered below 50 Hz
 The spectrogram happens in 4s intervals with 2s overlaps. 
+
+
+Currently I have pulled in files from:
+Fieldtrip https://www.fieldtriptoolbox.org/
+Chronux https://chronux.org/ and
+Brewermap from Droste effect https://www.mathworks.com/matlabcentral/fileexchange/24102-droste-effect-tool
