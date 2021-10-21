@@ -16,4 +16,4 @@ The spectrogram happens in 4s intervals with 2s overlaps.
 Currently I have pulled in files from:
 Fieldtrip https://www.fieldtriptoolbox.org/
 Chronux https://chronux.org/ and
-Brewermap from Droste effect https://www.mathworks.com/matlabcentral/fileexchange/24102-droste-effect-tool
+Brewermap from Droste effect https://www.mathworks.com/matlabcentral/fileexchange/24102-droste-effect-tool as necessary to do the plotting and analysis.
