@@ -18,7 +18,7 @@ function [psds,freqs,T,chanData] = sleepSpectrogram(chans,refs)
 % T: time for the spectrograms
 % chanData: the extracted chan data so that it can be saved out if desired
 %%%%%% 
-% LAST EDITED: 10/8/2021
+% LAST EDITED: 10/21/2021
 % LAST AUTHOR: Anirudh W
 
 if length(chans) ~= length(refs)
@@ -60,7 +60,7 @@ parfor i = 1:length(chanInds)
     chanData(i,:)= read_edf(filename, hdr, 1,hdr.nSamples,chanInds(i));
 end
 disp('Data extracted!')
-%%
+%% Generate the spectrograms and filter data
 ref =[];
 Fs = 1024;
 N = 1;
