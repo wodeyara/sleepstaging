@@ -19,5 +19,4 @@ function plotEEGtraces(chanTraces, refTraces)
     set(gca,'Fontsize', 14)
     legend({'C4', 'C3', 'F4', 'F3', 'O1', 'O2'})
     ylim([0,23])
-    h.YlimMode = 'manual';
 end
