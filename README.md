@@ -9,7 +9,7 @@ The actual staging could proceed as follows:
 3. Repeat process across the spectrogram. 
 
 Analysis details: 
-The plotted time series have been downsampled 10 times, this shouldn't matter as they have also been filtered below 50 Hz
+The plotted time series have been downsampled 10 times, this shouldn't matter as they have also been filtered below 50 Hz.
 The spectrogram happens in 4s intervals with 2s overlaps. 
 
 
