@@ -28,6 +28,8 @@ if length(chans) ~= length(refs)
     end
 end
 
+addpath(genpath('../sleepstaging'))
+
 [file,path] = uigetfile('*.edf');
 filename = [path,file];
 hdr = read_edf(filename);
