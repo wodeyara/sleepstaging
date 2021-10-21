@@ -142,7 +142,7 @@ end
 flagEnd =0;
 while ~flagEnd
     [x,y] = ginput(1);
-    disp(['Time Point: ', num2str(x*3600), 's and', num2str(x), 'hours']);
+    disp(['Time Point: ', num2str(x*3600), 's']);
     hr_tmp = hours(x);
     [h,m,s] = hms(hr_tmp);
     disp(['Time Point: ',num2str(h),':', num2str(m),':', num2str(s)]);
