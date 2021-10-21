@@ -93,7 +93,7 @@ endChan = size(chanData,1)-totalRefs-2;
 plotEEGtraces(chanData(startChan+1:endChan,:)', mean(chanData(endChan+totalRefs+1:endChan+totalRefs+2,:),1))
 %% Plotting spectrograms
 figure1 = figure('WindowState','maximized')
-% T = T*10/3600;% converting to hours
+T = T*10/3600;% converting to hours
 
 if (totalChans)>1
     for i = 1:(totalChans)
