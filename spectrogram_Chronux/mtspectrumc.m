@@ -1,4 +1,4 @@
-function [S,f,Serr]=mtspectrumc(data,params)
+function [S,f]=mtspectrumc(data,params)
 % Multi-taper spectrum - continuous process
 %
 % Usage:
@@ -63,6 +63,4 @@ J=J(findx,:,:);
 S=permute(mean(conj(J).*J,2),[1 3 2]);
 % S=permute(mean(J,2),[1 3 2]);
 if trialave; S=squeeze(mean(S,2));else S=squeeze(S);end
-if nargout==3; 
-   Serr=specerr(S,J,err,trialave);
-end;
+

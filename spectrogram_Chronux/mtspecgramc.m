@@ -1,4 +1,4 @@
-function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)
+function [S,t,f]=mtspecgramc(data,movingwin,params)
 % Multi-taper time-frequency spectrum - continuous process
 %
 % Usage:
@@ -87,16 +87,9 @@ end
 parfor n=1:nw;
    indx=winstart(n):winstart(n)+Nwin-1;
    datawin=data(indx,:);
-%    if nargout==4
-%      [s,f,serr]=mtspectrumc(datawin,params);
-%      Serr(1,n,:,:)=squeeze(serr(1,:,:));
-%      Serr(2,n,:,:)=squeeze(serr(2,:,:));
-%    else
-     [s,f]=mtspectrumc(datawin,params);
-%    end
+   [s,f]=mtspectrumc(datawin,params);
    S(n,:,:)=s;
 end;
 S=squeeze(S); 
-if nargout==4;Serr=squeeze(Serr);end;
 winmid=winstart+round(Nwin/2);
 t=winmid/Fs;
