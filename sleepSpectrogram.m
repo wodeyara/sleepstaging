@@ -13,7 +13,8 @@ function [psds,freqs,T,chanData] = sleepSpectrogram(chans,refs, startTime,endTim
 % figure to get time points, this process repeats until 'stop' is typed
 % into the command window. After each click it is necessary to go to the
 % command window and hit return to allow for the user to click on the
-% figure again. 
+% figure again. The outputted time will (on command window) will be
+% relative to absolute time i.e. relative to start of the full file. 
 % psds: spectrograms for all the channels in chans organized as T x F x
 % chans
 % freqs: frequencies for the spectrograms

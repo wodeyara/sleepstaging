@@ -1,4 +1,4 @@
-function [psds,freqs,T,chanData] = sleepSpectrogram(chans,refs)
+function [psds,freqs,T,chanData] = sleepSpectrogram(chans,refs, startTime,endTime)
 % This function asks for an EDF file to load, extracts the channels of interest
 % along with the references suggested and creates separate spectrograms for
 % each of them. You can specify whether you want to create a single subplot
@@ -6,19 +6,23 @@ function [psds,freqs,T,chanData] = sleepSpectrogram(chans,refs)
 % INPUTS:
 % chans as a cell array e.g. {'CZ','FZ'}
 % refs as a cell array e.g. {'CII', 'PZ'}
+% startTime: value between 0 and 1 specifying where to start reading the file
+% endTime: value between 0 and 1 (and greater than startTime) specifying where to end reading the file
 %OUTPUTS:
 % A figure window will pop up with crosshairs to allow clicking on the
 % figure to get time points, this process repeats until 'stop' is typed
 % into the command window. After each click it is necessary to go to the
 % command window and hit return to allow for the user to click on the
-% figure again. 
+% figure again. The outputted time 
 % psds: spectrograms for all the channels in chans organized as T x F x
 % chans
 % freqs: frequencies for the spectrograms
 % T: time for the spectrograms
 % chanData: the extracted chan data so that it can be saved out if desired
 %%%%%% 
-% LAST EDITED: 10/21/2021
+% EDITED: 10/21/2021: added line traces
+% EDITED: 10/25/2021: have added ability to select segment of time to
+% extract
 % LAST AUTHOR: Anirudh W
 
 if length(chans) ~= length(refs)
@@ -26,6 +30,18 @@ if length(chans) ~= length(refs)
     for i = 2:length(chans)
         refs{i} = refs{1};
     end
+end
+
+if startTime <0 | startTime >1 | endTime<0 | endTime >1
+    disp('Please enter appropriate start and end times')
+    disp('Assuming that the start time is 0 and end time is 1')
+    startTime =0;
+    endTime = 1;
+end
+if ~(endTime > startTime)
+    disp('Please ensure end time is later than start time')
+    disp('setting end time to 1')
+    endTime = 1;
 end
 
 addpath(genpath('../sleepstaging'))
@@ -57,7 +73,7 @@ for i = refs
 end
 fprintf('\n <strong> Extracting data... </strong>\n (could take upto 10 minutes) ')
 parfor i = 1:length(chanInds)
-    chanData(i,:)= read_edf(filename, hdr, 1,hdr.nSamples,chanInds(i));
+    chanData(i,:)= read_edf(filename, hdr, floor(startTime*hdr.nSamples) + 1,floor(endTime*hdr.nSamples),chanInds(i));
 end
 disp('Data extracted!')
 %% Generate the spectrograms and filter data
@@ -144,6 +160,7 @@ end
 flagEnd =0;
 while ~flagEnd
     [x,y] = ginput(1);
+    x = x + floor(startTime*hdr.nSamples)/(3600*Fs);
     disp(['Time Point: ', num2str(x*3600), 's and ', num2str(x), ' hours']);
     hr_tmp = hours(x);
     [h,m,s] = hms(hr_tmp);
