@@ -6,8 +6,8 @@ function [psds,freqs,T,chanData] = sleepSpectrogram(chans,refs, startTime,endTim
 % INPUTS:
 % chans as a cell array e.g. {'CZ','FZ'}
 % refs as a cell array e.g. {'CII', 'PZ'}
-% startTime: value between 0 and 1 specifying where to start reading the file
-% endTime: value between 0 and 1 (and greater than startTime) specifying where to end reading the file
+% startTime: value between 0 and length of EDF in hours specifying where to start reading the file
+% endTime: value between 0 and length of EDF in hours (and greater than startTime) specifying where to end reading the file
 %OUTPUTS:
 % A figure window will pop up with crosshairs to allow clicking on the
 % figure to get time points, this process repeats until 'stop' is typed
@@ -24,6 +24,10 @@ function [psds,freqs,T,chanData] = sleepSpectrogram(chans,refs, startTime,endTim
 % EDITED: 10/21/2021: added line traces
 % EDITED: 10/25/2021: have added ability to select segment of time to
 % extract
+% EDITED: 10/27/2021: The EEG traces are made in same plot as spectrograms,
+% they are time limited to 5 minutes. A second plot with full spectrogram
+% is also plotted. Changed normalization and added way to jump to a
+% specific time point.
 % LAST AUTHOR: Anirudh W
 
 if length(chans) ~= length(refs)
@@ -33,12 +37,6 @@ if length(chans) ~= length(refs)
     end
 end
 
-if startTime <0 | startTime >1 | endTime<0 | endTime >1
-    disp('Please enter appropriate start and end times')
-    disp('Assuming that the start time is 0 and end time is 1')
-    startTime =0;
-    endTime = 1;
-end
 if ~(endTime > startTime)
     disp('Please ensure end time is later than start time')
     disp('setting end time to 1')
@@ -50,10 +48,21 @@ addpath(genpath('../sleepstaging'))
 [file,path] = uigetfile('*.edf');
 filename = [path,file];
 hdr = read_edf(filename);
+Fs = hdr.Fs;
+startTime = (startTime*3600*Fs)/hdr.nSamples;
+endTime = (endTime*3600*Fs)/hdr.nSamples;
+
+if startTime <0 | startTime >1 | endTime<0 | endTime >1
+    disp('Please enter appropriate start and end times')
+    disp('Assuming that the start time is 0')
+    startTime =0;
+    endTime = 1;
+end
+
 chanInds = []; 
 % extract channel/ref locations
 totalChans = length(chans);
-chans(totalChans+1:totalChans+6) = {'C4', 'C3', 'F4', 'F3', 'O1', 'O2'};
+chans(totalChans+1:totalChans+6) = {'F3', 'F4', 'C3', 'C4', 'O1', 'O2'}; % F3 F4 C3 C4 O1 O2
 for i = chans
     tmp = find(strcmp(hdr.label,i));
     if isempty(tmp)
@@ -106,69 +115,108 @@ params.fpass = [.5,50];
 [b, a] = butter(2, (50)/(Fs/2), 'low');
 dataFilt = filtfilt(b,a,dataFilt);
 dataFilt = dataFilt(1:10:end,:);
-
-startChan = size(chanData,1)-6-totalRefs-2;
-endChan = size(chanData,1)-totalRefs-2;
-plotEEGtraces(chanData(startChan+1:endChan,:)', mean(chanData(endChan+totalRefs+1:endChan+totalRefs+2,:),1))
-%% Plotting spectrograms
+%% Plotting full spectrograms
 figure1 = figure('WindowState','maximized')
-T = T/3600;% converting to hours
+
+for i = 1:(totalChans)
+    psdsCurr = squeeze(psds(:,:,i));
+    g1(i) = subplot((totalChans),1,i)
+    imagesc(T,freqs,10*log10(psdsCurr)');
+    set(gca,'ydir','norm')
+    set(gca, 'Layer','top');
+    caxis([prctile(10*log10(psdsCurr(:)),25),prctile(10*log10(psdsCurr(:)),99)]);
+    title([chans{i},'-', refs{i}])
+    xlabel('Time (s)')
+    set(gca,'Fontsize', 14)
+    ylabel('Frequency')
+    h = colorbar;
+    h.Position(1) = h.Position(1) + .1;
+    h.Position(3) = 0.01;
+    h.Position(4) = 0.36;
+    ylabel(h,'Power (dB)')
+    colormap(flipud(brewermap([],'spectral')))
+    ylim([0 50]);
+end
+linkaxes(g1,'x')
+%% Plotting spectrograms, but delimited in time
+figure2 = figure('WindowState','maximized')
 
 if (totalChans)>1
     for i = 1:(totalChans)
         psdsCurr = squeeze(psds(:,:,i));
-        g(i) = subplot((totalChans),1,i)
+        g(i) = subplot((totalChans+1),1,i)
         imagesc(T,freqs,10*log10(psdsCurr)');
         set(gca,'ydir','norm')
         set(gca, 'Layer','top');
         caxis([prctile(10*log10(psdsCurr(:)),25),prctile(10*log10(psdsCurr(:)),99)]);
 
         hold on
-        l = plot((10/Fs:10/Fs:length(dataFilt)*(10/Fs))/3600,1.25*zscore(dataFilt(:,i))+40,'Linewidth', 1.2, 'Color', [.96,.68,.78,.75])
+        plot((10/Fs:10/Fs:length(dataFilt)*(10/Fs)),1.25*normalize(dataFilt(:,i),'zscore','robust')+40,'Linewidth', 1.2, 'Color', [.96,.68,.78,.75])
         
         title([chans{i},'-', refs{i}])
         xlabel('Time (s)')
         set(gca,'Fontsize', 14)
         ylabel('Frequency')
         h = colorbar;
+        h.Position(1) = h.Position(1) + .1;
+        h.Position(3) = 0.02;
+        h.Position(4) = 0.2;
         ylabel(h,'Power (dB)')
         colormap(flipud(brewermap([],'spectral')))
         ylim([0 50]);
     end
+    startChan = size(chanData,1)-6-totalRefs-2;
+    endChan = size(chanData,1)-totalRefs-2;
+    g(i+1) = subplot(totalChans+1,1,i+1);
+    plotEEGtraces(chanData(startChan+1:endChan,:)', mean(chanData(endChan+totalRefs+1:endChan+totalRefs+2,:),1));
     linkaxes(g,'x')
 else  
+    g(1) = subplot(211);
     image(T,freqs,10*log10(psds)','CDataMapping','scaled');
     set(gca,'ydir','norm')
     set(gca, 'Layer','top');
     caxis([prctile(10*log10(psds(:)),25),prctile(10*log10(psds(:)),99)]);
-
     hold on
-    plot((10/Fs:10/Fs:length(dataFilt)*10/Fs)/3600,1.25*zscore(dataFilt(:,i))+40,'Linewidth', 1.2, 'Color', [.96,.68,.78 .75])
+    plot((10/Fs:10/Fs:length(dataFilt)*10/Fs),1.25*normalize(dataFilt(:,i),'zscore','robust')+40,'Linewidth', 1.2, 'Color', [.96,.68,.78 .75])
     
     title([chans{1},'-', refs{1}])
     xlabel('Time (s)')
     set(gca,'Fontsize', 14)
     ylabel('Frequency')
     h = colorbar;
+    h.Position(1) = h.Position(1) + .1;
+    h.Position(3) = 0.01;
+    h.Position(4) = 0.36;
+
     ylabel(h,'Power (dB)')
     colormap(flipud(brewermap([],'spectral')))
     xlim([0 max(T)]);
     ylim([0 50]);
+    
+    g(2) = subplot(212);
+    startChan = size(chanData,1)-6-totalRefs-2;
+    endChan = size(chanData,1)-totalRefs-2;
+    h = plotEEGtraces(chanData(startChan+1:endChan,:)', mean(chanData(endChan+totalRefs+1:endChan+totalRefs+2,:),1));
+    linkaxes(g,'x')
 end
+xlim([0,300]); % 5 mins at a time
 
 %% Defining sleep stages
 
 flagEnd =0;
 while ~flagEnd
     [x,y] = ginput(1);
-    x = x + floor(startTime*hdr.nSamples)/(3600*Fs);
+    x = x/3600 + floor(startTime*hdr.nSamples)/(3600*Fs);
     disp(['Time Point: ', num2str(x*3600), 's and ', num2str(x), ' hours']);
     hr_tmp = hours(x);
     [h,m,s] = hms(hr_tmp);
     disp(['Time Point: ',num2str(h),':', num2str(m),':', num2str(s)]);
-    z = input('Hit enter to continue identifying time points, type stop to stop','s');
+    z = input('Hit enter to continue identifying time points, type stop to stop \n Or type T to enter a time point to jump to','s');
     if strcmp(z,'stop')
         flagEnd = 1;
+    elseif strcmp(z,'T')
+        tp = input('Enter time point in seconds to jump to');
+        set(g(1),'xlim',[tp,tp+300]);
     end
 end
 

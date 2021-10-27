@@ -1,4 +1,4 @@
-function plotEEGtraces(chanTraces, refTraces)
+function h = plotEEGtraces(chanTraces, refTraces)
     Fs = 1024;
     chanTraces = bsxfun(@minus, chanTraces, refTraces');
     
@@ -9,14 +9,13 @@ function plotEEGtraces(chanTraces, refTraces)
     chanTraces = filtfilt(b,a,chanTraces);
     
     chanTraces = chanTraces(1:10:end,:);
-    chanTraces = bsxfun(@plus, zscore(chanTraces), 3*[1:size(chanTraces,2)]);
+    chanTraces = bsxfun(@plus, normalize(chanTraces,'zscore','robust'), 3*[1:size(chanTraces,2)]);
     
-    figure 
-    h = plot((10/Fs:10/Fs:length(chanTraces)*10/Fs)/3600, chanTraces,'Linewidth', 1.25)
+    h = plot((10/Fs:10/Fs:length(chanTraces)*10/Fs), chanTraces,'Linewidth', 1.25);
     grid on
-    xlabel('Time (hrs)')
+    xlabel('Time (s)')
     ylabel('Signal')
     set(gca,'Fontsize', 14)
-    legend({'C4', 'C3', 'F4', 'F3', 'O1', 'O2'})
+    legend({'F3', 'F4', 'C3', 'C4', 'O1', 'O2'}, 'Orientation', 'horizontal')
     ylim([0,23])
 end
