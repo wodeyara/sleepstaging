@@ -222,12 +222,7 @@ while ~flagEnd
 end
 
 function moveLeftRight(src,event)
-    if strcmp(event.Key, 'rightarrow')
-        lims = get(gca,'Xlim');
-        set(gca,'xlim', [lims(2),lims(2)+2])
-    elseif strcmp(event.Key, 'leftarrow')
-        lims = get(gca,'Xlim');
-        set(gca,'xlim', [lims(1)-2,lims(1)])
-    end
+
+disp('down')
 
 
