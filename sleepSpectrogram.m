@@ -10,16 +10,17 @@ function [psds,freqs,T,dataFilt,eegData] = sleepSpectrogram(chans,refs, startTim
 % endTime: value between 0 and length of EDF in hours (and greater than startTime) specifying where to end reading the file
 %OUTPUTS:
 % A figure window will pop up with crosshairs to allow clicking on the
-% figure to get time points, this process repeats until 'stop' is typed
-% into the command window. After each click it is necessary to go to the
+% figure to get time points, after clickign it is possible to move around
+% the time series using left and right keys. After each click it is necessary to go to the
 % command window and hit return to allow for the user to click on the
-% figure again. The outputted time will (on command window) will be
+% figure again. The outputted time (on command window) will be
 % relative to absolute time i.e. relative to start of the full file. 
 % psds: spectrograms for all the channels in chans organized as T x F x
 % chans
 % freqs: frequencies for the spectrograms
 % T: time for the spectrograms
-% chanData: the extracted chan data so that it can be saved out if desired
+% dataFilt: the extracted chan data so that it can be saved out if desired
+% eegData: the EEG data separately extracted
 %%%%%% 
 % EDITED: 10/21/2021: added line traces
 % EDITED: 10/25/2021: have added ability to select segment of time to
@@ -28,6 +29,8 @@ function [psds,freqs,T,dataFilt,eegData] = sleepSpectrogram(chans,refs, startTim
 % they are time limited to 5 minutes. A second plot with full spectrogram
 % is also plotted. Changed normalization and added way to jump to a
 % specific time point.
+% EDITED: 10/29/2021: Can now move along the plot using left and right
+% arrows
 % LAST AUTHOR: Anirudh W
 
 if length(chans) ~= length(refs)
