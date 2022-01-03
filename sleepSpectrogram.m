@@ -108,7 +108,7 @@ dataFilt = filtfilt(b,a,chanData_red-refData);
 dataFilt = filtfilt(b,a,dataFilt);
 
 params.tapers = [.5,4,1]; % assuming 2 second segments this means our bin size is 1 Hz
-params.Fs = 1024;
+params.Fs = Fs;
 params.pad = -1;
 params.fpass = [.5,50];
 
@@ -172,7 +172,7 @@ if (totalChans)>1
     startChan = size(chanData,1)-6-totalRefs-2;
     endChan = size(chanData,1)-totalRefs-2;
     g(i+1) = subplot(totalChans+1,1,i+1);
-    [h_eeg, eegData]= plotEEGtraces(chanData(startChan+1:endChan,:)', mean(chanData(endChan+totalRefs+1:endChan+totalRefs+2,:),1));
+    [h_eeg, eegData]= plotEEGtraces(chanData(startChan+1:endChan,:)', mean(chanData(endChan+totalRefs+1:endChan+totalRefs+2,:),1), Fs);
     linkaxes(g,'x')
 else  
     g(1) = subplot(211);
@@ -200,7 +200,7 @@ else
     g(2) = subplot(212);
     startChan = size(chanData,1)-6-totalRefs-2;
     endChan = size(chanData,1)-totalRefs-2;
-    h = plotEEGtraces(chanData(startChan+1:endChan,:)', mean(chanData(endChan+totalRefs+1:endChan+totalRefs+2,:),1));
+    h = plotEEGtraces(chanData(startChan+1:endChan,:)', mean(chanData(endChan+totalRefs+1:endChan+totalRefs+2,:),1),Fs);
     linkaxes(g,'x')
 end
 xlim([0,2]); % 2 mins at a time
@@ -219,7 +219,13 @@ while ~flagEnd
     if strcmp(z,'stop')
         flagEnd = 1;
     elseif strcmp(z,'T')
-        tp = input('Enter time point in minutes to jump to');
+        tp = 'a';
+        while ~isnumeric(tp)
+            tp = input('Enter time point in minutes to jump to');  
+            if ~isnumeric(tp)  
+                disp('Please enter a number')
+            end
+        end
         set(g(1),'xlim',[tp,tp+2]);
     end
 end

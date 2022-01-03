@@ -1,5 +1,4 @@
-function [h,chanTraces] = plotEEGtraces(chanTraces, refTraces)
-    Fs = 1024;
+function [h,chanTraces] = plotEEGtraces(chanTraces, refTraces,Fs)
     chanTraces = bsxfun(@minus, chanTraces, refTraces');
     
     [b, a] = butter(2, (.1)/(Fs/2), 'high');
